@@ -31,8 +31,10 @@ from classes.email import intelectualSysEmail
 
 # global variables
 SEND_BTN_XPATH = '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[2]/button'
-SEND_FILE_BTN_XPATH = '//*[@id="app"]/div/div/div[3]/div[2]/span/div/span/div/div/div[2]/div/div[2]/div[2]/div/div'
-INVALID_NUMBER_ELEMENT_XPATH = '//*[@id="app"]/div/span[2]/div/span/div/div/div/div/div/div[1][contains(text(), "O número de telefone compartilhado através de url é inválido.")]'
+SEND_FILE_BTN_XPATH = '//*[@id="app"]/div/div[2]/div[2]/div[2]/span/div/span/div/div/div[2]/div/div[2]/div[2]/div/div'
+INVALID_NUMBER_ELEMENT_XPATH = (
+    '//*[@id="app"]/div/span[2]/div/span/div/div/div/div/div/div[1]'
+)
 NO_CONTENT_FILE_ELE_XPATH = '//*[@id="app"]/div/span[1]/div/div/div[conatins(text(), "1 documento que você tentou adicionar não tem conteúdo.")]'
 
 
@@ -68,7 +70,7 @@ class whatsApp:
     def isLogged(self):
         try:
             self.driver.get("https://web.whatsapp.com/")
-            self.waitWhatsAppWebPageLoad(20)
+            self.waitWhatsAppWebPageLoad(35)
 
             return True
 
@@ -108,10 +110,14 @@ class whatsApp:
 
         for file in files:
             try:
+                time.sleep(1)
                 # Clica no clips
                 clipElement = wait.until(
                     EC.element_to_be_clickable(
-                        (By.CSS_SELECTOR, "span[data-icon='clip']")
+                        (
+                            By.XPATH,
+                            '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[1]/div/div',
+                        )
                     )
                 )
                 clipElement.click()
@@ -129,12 +135,14 @@ class whatsApp:
                     EC.element_to_be_clickable((By.XPATH, SEND_FILE_BTN_XPATH))
                 )
                 sendFileBtn.click()
-            except:
-                logAndPrint(f"Ocorreram problemas ao enviar o arquivo: {file}")
+            except Exception as e:
+                logAndPrint(f"Ocorreram problemas ao enviar o arquivo: {file}:\n\n {e}")
                 continue
 
     def send(self, message):
         self.openConversationWithMessage(message)
+
+        time.sleep(2)
 
         if self.isWhatsAppNumberValid():
             self.sendMessage()
@@ -145,11 +153,12 @@ class whatsApp:
             raise invalidWhatsAppNumberException(message.id, message.numero)
 
     def isWhatsAppNumberValid(self):
-        self.driver.implicitly_wait(3)
         try:
             element = self.driver.find_element(By.XPATH, INVALID_NUMBER_ELEMENT_XPATH)
-            if element:
+            if element.text == "O número de telefone compartilhado por url é inválido.":
                 return False
+            else:
+                return True
 
         except NoSuchElementException:
             return True
