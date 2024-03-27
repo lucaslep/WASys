@@ -1,4 +1,4 @@
-import re, qrcode, os
+import re, qrcode, os, requests
 
 
 class Helpers:
@@ -49,3 +49,11 @@ class Helpers:
     def minutes_to_seconds(minutes):
         minutes = int(minutes)
         return minutes * 60
+
+    @staticmethod
+    def has_internet_connection():
+        try:
+            response = requests.get("http://www.google.com/", timeout=5)
+            return True
+        except requests.ConnectionError:
+            return False

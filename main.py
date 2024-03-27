@@ -30,6 +30,11 @@ try:
 
     logger.info("Conexão com o banco efetuada com sucesso!")
 
+    while Helpers.has_internet_connection() == False:
+        logger.error("Sem conexão com a internet")
+        time.sleep(10)
+        pass
+
     driver = start_webdriver(visible=False)
     whatsapp_page = WhatsappPage(driver)
     if not whatsapp_page.is_logged():
@@ -38,6 +43,13 @@ try:
     logger.info("Conectado ao whatsapp com sucesso!")
 
     while True:
+        if Helpers.has_internet_connection() == False:
+            logger.error(
+                "A conexão com a internet caiu durante o envio, Aguardando conexão"
+            )
+            time.sleep(10)
+            continue
+
         unsent_messages = WhatsappRepository.get_unsent_messages()
         messages_count = len(unsent_messages)
 
