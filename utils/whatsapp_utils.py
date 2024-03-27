@@ -1,24 +1,28 @@
 # Libs.
-import os
+import os, time, logging
 from datetime import datetime
-import time
+from typing import List
 
 from constants import whatsapp_constants as wpp_constants
-from constants.error_messages import ATTACHMENT_NOT_FOUND_ERROR, INVALID_NUMBER_ERROR
+from constants.error_messages import (
+    ATTACHMENT_NOT_FOUND_ERROR,
+    INVALID_NUMBER_ERROR,
+)
 from repositories.attachments_repository import (
     AttachmentRepository,
 )
-from utils import Helpers, log_and_print
+from utils import Helpers, WhatsappMessage
 from pages.chat_page import ChatPage
 from repositories.whatsapp_repository import WhatsappRepository
 from exceptions import InvalidAttachmentException, InvalidNumberException
+
+logger = logging.getLogger("main")
 
 
 def handle_invalid_attachment(
     message_id: int, attachment_id: int, attachment_sequence: int, file_name: str
 ):
-
-    log_and_print(
+    logger.error(
         Helpers.format_error_message(
             ATTACHMENT_NOT_FOUND_ERROR, [message_id, file_name]
         )
@@ -32,7 +36,7 @@ def handle_invalid_attachment(
 
 def handle_invalid_number_exception(message_id, number):
     try:
-        log_and_print(
+        logger.error(
             Helpers.format_error_message(INVALID_NUMBER_ERROR, [message_id, number])
         )
 
@@ -43,7 +47,16 @@ def handle_invalid_number_exception(message_id, number):
         )
 
     except Exception as e:
-        log_and_print(e)
+        logger.error(e)
+
+
+def handle_unknown_exception(message_id, number):
+    logger.error(
+        Helpers.format_error_message(wpp_constants.UNKNOWN_ERROR_MSG, [number])
+    )
+    WhatsappRepository.update_message_error(
+        message_id, wpp_constants.UNKNOWN_ERROR_CODE, wpp_constants.UNKNOWN_ERROR_MSG
+    )
 
 
 def mark_message_as_sent(messageId):
@@ -53,10 +66,10 @@ def mark_message_as_sent(messageId):
     try:
         WhatsappRepository.update_message_send(messageId, send_time)
     except Exception as e:
-        log_and_print(str(e))
+        logger.error(str(e))
 
 
-def send_whatsapp_messages(driver, messages):
+def send_whatsapp_messages(driver, messages: List[WhatsappMessage]):
     for message in messages:
         chat_page = ChatPage(driver, message.number, message.message)
 
@@ -80,10 +93,7 @@ def send_whatsapp_messages(driver, messages):
             chat_page.send_message()
             if message.has_attachment():
                 chat_page.send_attachments(attachments)
-
-            log_and_print(
-                f"Mensagem para o número {message.number} enviada com sucesso!"
-            )
+            logger.info(f"Mensagem para o número {message.number} enviada com sucesso!")
             time.sleep(3)
             mark_message_as_sent(message.message_id)
 
@@ -95,6 +105,11 @@ def send_whatsapp_messages(driver, messages):
             handle_invalid_attachment(
                 e.message_id, e.attachment_id, e.attachment_sequence, e.file_name
             )
+            continue
+
+        except Exception as e:
+            logger.error(str(e))
+            handle_unknown_exception(message.message_id, message.number)
             continue
 
 
@@ -114,4 +129,4 @@ def update_whatsapp_waiting_qrcode(value="N"):
     try:
         WhatsappRepository.update_waiting_qrcode(value)
     except Exception as e:
-        log_and_print(str(e))
+        logger.error(str(e))

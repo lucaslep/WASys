@@ -5,10 +5,17 @@ block_cipher = None
 
 
 a = Analysis(
-    ['WaSys.py'],
+    ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('utils', 'utils'), ('constants', 'constants'), ('classes', 'classes'), ('config', 'config'), ('repositories', 'repositories')],
+    datas=[
+        ('utils', 'utils'), 
+        ('constants', 'constants'), 
+        ('config', 'config'), 
+        ('repositories', 'repositories'), 
+        ('pages', 'pages'),
+        ('exceptions', 'exceptions')
+    ],
     hiddenimports=[
         'selenium',
         'firebirdsql', 
@@ -23,7 +30,8 @@ a = Analysis(
         'email.mime',
         'email.mime.text',
         'email.mime.multipart',
-        'email.mime.image'
+        'email.mime.image',
+        'qrcode'
     ],
     hookspath=[],
     hooksconfig={},

@@ -44,3 +44,8 @@ class Helpers:
             os.system("cls")
         elif os.name == "posix":
             os.system("clear")
+
+    @staticmethod
+    def minutes_to_seconds(minutes):
+        minutes = int(minutes)
+        return minutes * 60

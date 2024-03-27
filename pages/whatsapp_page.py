@@ -1,16 +1,16 @@
 from selenium.webdriver.support.ui import WebDriverWait
 import selenium.webdriver.support.expected_conditions as EC
 from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.common.exceptions import TimeoutException
 from pages import BasePage
 from utils import (
     update_whatsapp_waiting_qrcode,
-    log_and_print,
-    start_webdriver,
     update_whatsapp_waiting_qrcode,
     Helpers,
 )
-import time, sys
+import time, logging
+
+logger = logging.getLogger("main")
 
 
 class WhatsappPage(BasePage):
@@ -22,13 +22,13 @@ class WhatsappPage(BasePage):
     qrcode_by = (By.XPATH, '//*[@id="app"]/div/div[2]/div[3]/div[1]/div/div/div[2]/div')
 
     def login(self):
-        log_and_print("WhatsApp não logado, iniciando rotina de Login ... ")
+        logger.info("WhatsApp não logado, iniciando rotina de Login ... ")
         update_whatsapp_waiting_qrcode("S")
 
         while not self.is_logged():
             qrcode = self.get_qrcode()
             Helpers.clear_terminal()
-            log_and_print("Aguardando captura do QRCode para login ...")
+            logger.info("Aguardando captura do QRCode para login ...")
             qrcode.print_ascii()
             time.sleep(30)
 

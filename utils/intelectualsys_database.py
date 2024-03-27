@@ -1,8 +1,8 @@
-import firebirdsql
-from utils.sys_utils import exit_with_log
-from utils import IniFile
-from utils import Helpers
+import firebirdsql, sys, logging
+from utils import IniFile, Helpers
 from constants.error_messages import DB_CONNECTION_ERROR
+
+logger = logging.getLogger("main")
 
 
 class IntelectualSysDB:
@@ -14,7 +14,9 @@ class IntelectualSysDB:
             self.host = self.get_host(self.full_path)
 
         except Exception as e:
-            exit_with_log(Helpers.format_error_message(DB_CONNECTION_ERROR, [str(e)]))
+            msg = Helpers.format_error_message(DB_CONNECTION_ERROR, [str(e)])
+            logger.error(msg)
+            sys.exit(msg)
 
     def get_path(self, full_path):
         start_pos = full_path.find(":") + 1
@@ -44,7 +46,9 @@ class IntelectualSysDB:
             return self.connection
 
         except Exception as e:
-            exit_with_log(Helpers.format_error_message(DB_CONNECTION_ERROR, [str(e)]))
+            msg = Helpers.format_error_message(DB_CONNECTION_ERROR, [str(e)])
+            logger.error(msg)
+            sys.exit(msg)
 
     def disconnect(self):
         if self.connection is not None:

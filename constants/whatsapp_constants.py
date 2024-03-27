@@ -13,3 +13,8 @@ ANEXOS_ERROR_CODE = 2
 ANEXOS_ERROR_MESSAGE = (
     "Não foi possível enviar a mensagem devido a anexos não encontrados"
 )
+
+UNKNOWN_ERROR_CODE = 3
+UNKNOWN_ERROR_MSG = (
+    "Erro ao enviar mensagem para o número: {0} devido a erro desconhecido."
+)

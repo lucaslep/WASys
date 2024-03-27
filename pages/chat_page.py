@@ -2,10 +2,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 import selenium.webdriver.support.expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
-import time
-import urllib
+import time, urllib, logging
 from pages import BasePage
-from utils import log_and_print
+
+logger = logging.getLogger("main")
 
 
 class ChatPage(BasePage):
@@ -15,7 +15,7 @@ class ChatPage(BasePage):
         text = urllib.parse.quote(f"{message}")
         whatsapp_url = f"https://web.whatsapp.com/send?phone={number}&text={text}"
         self.driver.get(whatsapp_url)
-        self.wait_whatsapp_page_load(15)
+        self.wait_load()
 
     invalid_number_by = (
         By.XPATH,
@@ -32,9 +32,30 @@ class ChatPage(BasePage):
         '//*[@id="app"]/div/div[2]/div[2]/div[2]/span/div/span/div/div/div[2]/div/div[2]/div[2]/div/div',
     )
 
-    def wait_whatsapp_page_load(self, timeout):
-        wait = WebDriverWait(self.driver, timeout)
+    def wait_load(self):
+        wait = WebDriverWait(self.driver, 30)
         wait.until(EC.visibility_of_element_located((By.ID, "side")))
+
+        chat_loaded = False
+        while not chat_loaded:
+            element = self.driver.find_elements(
+                By.XPATH,
+                '//*[@id="app"]/div/span[2]/div/span/div/div/div/div/div/div[1]',
+            )
+            if not element:
+                chat_loaded = True
+
+            time.sleep(1)
+        time.sleep(1)
+
+        # wait.until_not(
+        #     EC.presence_of_element_located(
+        #         (
+        #             By.XPATH,
+        #             '//*[@id="app"]/div/span[2]/div/span/div/div/div/div/div/div[1]',
+        #         )
+        #     )
+        # )
 
     def is_number_valid(self):
         try:
@@ -80,7 +101,7 @@ class ChatPage(BasePage):
                 )
                 send_file_button.click()
             except Exception as e:
-                log_and_print(
+                logger.error(
                     f"Ocorreram problemas ao enviar o arquivo: {attachment.file_name}:\n\n {e}"
                 )
                 continue

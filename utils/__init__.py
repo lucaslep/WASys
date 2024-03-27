@@ -13,6 +13,6 @@ from utils.ini_file import *
 from utils.intelectualsys_database import *
 from utils.selenium_utils import *
 from utils.sql_handler import *
-from utils.sys_utils import *
 from utils.whatsapp_message import *
 from utils.whatsapp_utils import *
+from utils.logger import *
