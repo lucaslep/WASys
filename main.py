@@ -1,17 +1,18 @@
 # LOCAL SOURCE
 from pages import WhatsappPage
+from repositories.whatsapp_repository import WhatsappRepository
 from utils import (
     send_whatsapp_messages,
     IntelectualSysDB,
     start_webdriver,
     setup_logger,
     Helpers,
+    update_whatsapp_waiting_qrcode,
 )
 from config.globals import (
     set_db_connection,
     set_app_path,
 )
-from repositories.whatsapp_repository import WhatsappRepository
 import time, os, logging, sys
 
 setup_logger()
@@ -41,6 +42,7 @@ try:
         whatsapp_page.login()
 
     logger.info("Conectado ao whatsapp com sucesso!")
+    update_whatsapp_waiting_qrcode("N")
 
     while True:
         if Helpers.has_internet_connection() == False:
