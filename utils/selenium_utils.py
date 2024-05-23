@@ -9,7 +9,14 @@ from utils import get_current_disk
 def start_webdriver(visible: bool):
     headless = False if visible else True
 
-    chrome_service = ChromeService(ChromeDriverManager().install())
+    try:
+        driver_path = ChromeDriverManager().install()
+    except:
+        # Se não conseguir instalar o chromeDriver correspondente ao chrome
+        # instala uma versão fallback.
+        driver_path = ChromeDriverManager(driver_version="109.0.5414.74").install()
+
+    chrome_service = ChromeService(executable_path=driver_path)
     chrome_service.creationflags = CREATE_NO_WINDOW
 
     driver = webdriver.Chrome(
