@@ -23,10 +23,10 @@ logger.info("Bem vindo! " + "Iniciando WaSys ... " + "Powered By Sóftica Inform
 logger.info("Conectando ao Banco de dados...")
 try:
     set_app_path(__file__)
-    ini = IniFile()
+    os.environ["WDM_LOG"] = str(logging.NOTSET)  # Desativa o log do webdriver manager
 
-    # Desativa o log do webdriver manager
-    os.environ["WDM_LOG"] = str(logging.NOTSET)
+    ini = IniFile()
+    browser_visible = ini.get_value("WASYS_NAVEGADOR_VISIVEL")
 
     database = IntelectualSysDB()
     con = database.connect()
@@ -39,7 +39,6 @@ try:
         time.sleep(10)
         pass
 
-    browser_visible = ini.get_value("WASYS_NAVEGADOR_VISIVEL")
     driver = start_webdriver(visible=browser_visible)
     whatsapp_page = WhatsappPage(driver)
     if not whatsapp_page.is_logged():

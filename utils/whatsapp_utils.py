@@ -93,6 +93,7 @@ def send_whatsapp_messages(driver, messages: List[WhatsappMessage]):
             chat_page.send_message()
             if message.has_attachment():
                 chat_page.send_attachments(attachments)
+
             logger.info(f"Mensagem para o número {message.number} enviada com sucesso!")
             time.sleep(3)
             mark_message_as_sent(message.message_id)

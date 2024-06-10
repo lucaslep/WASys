@@ -29,7 +29,8 @@ class ChatPage(BasePage):
 
     send_file_btn_by = (
         By.XPATH,
-        '//*[@id="app"]/div/div[2]/div[2]/div[2]/span/div/span/div/div/div[2]/div/div[2]/div[2]/div/div',
+        # '//*[@id="app"]/div/div[2]/div[2]/div[2]/span/div/span/div/div/div[2]/div/div[2]/div[2]/div/div',
+        '//*[@id="app"]/div/div[2]/div[2]/div[2]/span/div/div/div/div[2]/div/div[2]/div[2]'
     )
 
     def wait_load(self):
