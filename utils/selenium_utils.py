@@ -6,7 +6,7 @@ from subprocess import CREATE_NO_WINDOW
 from utils import get_current_disk
 
 
-def start_webdriver(visible: bool):
+def start_webdriver(visible: bool = False):
     headless = False if visible else True
 
     try:

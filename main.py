@@ -15,12 +15,15 @@ from config.globals import (
 )
 import time, os, logging, sys
 
+from utils.ini_file import IniFile
+
 setup_logger()
 logger = logging.getLogger("main")
 logger.info("Bem vindo! " + "Iniciando WaSys ... " + "Powered By Sóftica Informática ©")
 logger.info("Conectando ao Banco de dados...")
 try:
     set_app_path(__file__)
+    ini = IniFile()
 
     # Desativa o log do webdriver manager
     os.environ["WDM_LOG"] = str(logging.NOTSET)
@@ -36,7 +39,8 @@ try:
         time.sleep(10)
         pass
 
-    driver = start_webdriver(visible=False)
+    browser_visible = ini.get_value("WASYS_NAVEGADOR_VISIVEL")
+    driver = start_webdriver(visible=browser_visible)
     whatsapp_page = WhatsappPage(driver)
     if not whatsapp_page.is_logged():
         whatsapp_page.login()
