@@ -4,6 +4,8 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 import time, urllib, logging
 from pages import BasePage
+from components import Message
+from exceptions import AttachmentTimeoutException
 
 logger = logging.getLogger("main")
 
@@ -29,8 +31,7 @@ class ChatPage(BasePage):
 
     send_file_btn_by = (
         By.XPATH,
-        # '//*[@id="app"]/div/div[2]/div[2]/div[2]/span/div/span/div/div/div[2]/div/div[2]/div[2]/div/div',
-        '//*[@id="app"]/div/div[2]/div[2]/div[2]/span/div/div/div/div[2]/div/div[2]/div[2]'
+        '//*[@id="app"]/div/div[2]/div[2]/div[2]/span/div/div/div/div[2]/div/div[2]/div[2]',
     )
 
     def wait_load(self):
@@ -45,18 +46,35 @@ class ChatPage(BasePage):
             )
             if not element:
                 chat_loaded = True
-
             time.sleep(1)
         time.sleep(1)
 
-        # wait.until_not(
-        #     EC.presence_of_element_located(
-        #         (
-        #             By.XPATH,
-        #             '//*[@id="app"]/div/span[2]/div/span/div/div/div/div/div/div[1]',
-        #         )
-        #     )
-        # )
+    def wait_upload_attachment(self, message_index, timeout):
+        is_attachment_sent = False
+        seconds_waited = 0
+        while not is_attachment_sent:
+            time.sleep(1)
+            seconds_waited += 1
+            if seconds_waited >= timeout:
+                raise AttachmentTimeoutException("Timeout ao aguardar envio de anexo")
+
+            last_message = self.get_message_out_by_index(message_index)
+            is_attachment_sent = last_message.is_sent()
+
+    def get_messages_out(self):
+        return self.driver.find_elements(By.CSS_SELECTOR, "div.message-out")
+
+    def get_last_message_sent(self):
+        messages = self.get_messages_out()
+        return Message(messages[-1])
+
+    def get_message_out_by_index(self, message_index):
+        messages = self.get_messages_out()
+
+        if message_index > len(messages) - 1:
+            raise Exception("Indice fora do range de mensagens enviadas")
+
+        return Message(messages[message_index])
 
     def is_number_valid(self):
         try:
@@ -73,34 +91,46 @@ class ChatPage(BasePage):
         wait = WebDriverWait(self.driver, 50)
         wait.until(EC.element_to_be_clickable(self.send_btn_by)).click()
 
-    def send_attachments(self, attachments):
+    def send_attachment(self, attachment):
+        # Clica no clips
+        clip_element = self.wait.until(
+            EC.element_to_be_clickable(
+                (
+                    By.XPATH,
+                    '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[1]/div/div',
+                )
+            )
+        )
+        clip_element.click()
+
+        # Localiza o Input de arquivos e envia os arquivos
+        file_input_element = self.wait.until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='file']"))
+        )
+        file_input_element.send_keys(attachment.file_path)
+
+        # Clica no botão de envio
+        send_file_button = self.wait.until(
+            EC.element_to_be_clickable(self.send_file_btn_by)
+        )
+        send_file_button.click()
+        time.sleep(1)
+
+        last_message_index = len(self.get_messages_out()) - 1
+        self.wait_upload_attachment(last_message_index, 15)
+
+    def send_all_attachments(self, attachments):
         for attachment in attachments:
             try:
                 time.sleep(1)
-                # Clica no clips
-                clip_element = self.wait.until(
-                    EC.element_to_be_clickable(
-                        (
-                            By.XPATH,
-                            '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[1]/div/div',
-                        )
-                    )
-                )
-                clip_element.click()
+                self.send_attachment(attachment)
 
-                # Localiza o Input de arquivos e envia os arquivos
-                file_input_element = self.wait.until(
-                    EC.presence_of_element_located(
-                        (By.CSS_SELECTOR, "input[type='file']")
-                    )
+            except AttachmentTimeoutException as e:
+                logger.error(
+                    f"Timeout ao aguardar envio de anexo: {attachment.file_name}:\n\n {e}"
                 )
-                file_input_element.send_keys(attachment.file_path)
+                continue
 
-                # Clica no botão de envio
-                send_file_button = self.wait.until(
-                    EC.element_to_be_clickable(self.send_file_btn_by)
-                )
-                send_file_button.click()
             except Exception as e:
                 logger.error(
                     f"Ocorreram problemas ao enviar o arquivo: {attachment.file_name}:\n\n {e}"

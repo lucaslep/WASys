@@ -11,7 +11,7 @@ from utils.fs_utils import *
 from utils.helpers import *
 from utils.ini_file import *
 from utils.intelectualsys_database import *
-from utils.selenium_utils import *
+from utils.webdriver import *
 from utils.sql_handler import *
 from utils.whatsapp_message import *
 from utils.whatsapp_utils import *

@@ -3,16 +3,14 @@ import config.globals as globals
 
 
 class IniFile:
-    def __init__(self):
-        self.path = rf"{globals.DIR}\IntelectualSys.ini"
+    def __init__(self, ini_path):
+        if not os.path.isfile(rf"{ini_path}"):
+            raise FileNotFoundError(f"O arquivo ini: {ini_path} não foi encontrado!")
 
-        if not os.path.isfile(rf"{self.path}"):
-            raise FileNotFoundError(f"O arquivo ini: {self.path} não foi encontrado!")
+        self.read_ini_file(ini_path)
 
-        self.read_ini_file()
-
-    def read_ini_file(self):
-        with open(self.path, "r", encoding="UTF-8") as ini:
+    def read_ini_file(self, ini_path):
+        with open(ini_path, "r", encoding="UTF-8") as ini:
             self.lines = clear_text_lines(ini.readlines())
 
     def get_value(self, value_name):

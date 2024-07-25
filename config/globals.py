@@ -19,7 +19,7 @@ def get_app_path():
 
 
 def get_app_dir():
-    return os.path.dirname(PATH)
+    return DIR
 
 
 def set_db_connection(conn):

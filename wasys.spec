@@ -14,7 +14,8 @@ a = Analysis(
         ('config', 'config'), 
         ('repositories', 'repositories'), 
         ('pages', 'pages'),
-        ('exceptions', 'exceptions')
+        ('exceptions', 'exceptions'),
+        ('components', 'components')
     ],
     hiddenimports=[
         'selenium',

@@ -55,7 +55,7 @@ class WhatsappPage(BasePage):
 
     def get_qrcode(self):
         try:
-            WebDriverWait(self.driver, 15).until(self.__qrcode_loaded)
+            WebDriverWait(self.driver, 60).until(self.__qrcode_loaded)
         except TimeoutException as e:
             raise TimeoutException("Timeout ao aguardar carregamento do QRCode")
 
