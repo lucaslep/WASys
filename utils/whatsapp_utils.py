@@ -71,11 +71,8 @@ def mark_message_as_sent(messageId):
 
 def send_whatsapp_messages(driver, messages: List[WhatsappMessage]):
     for message in messages:
-        chat_page = ChatPage(driver, message.number, message.message)
-
         try:
-            if not chat_page.is_number_valid():
-                raise InvalidNumberException(message.message_id, message.number)
+            chat_page = ChatPage(driver, message.number, message.message)
 
             if message.has_attachment():
                 attachments = AttachmentRepository.get_attachments_by_id(
@@ -99,7 +96,7 @@ def send_whatsapp_messages(driver, messages: List[WhatsappMessage]):
             mark_message_as_sent(message.message_id)
 
         except InvalidNumberException as e:
-            handle_invalid_number_exception(e.message_id, e.number)
+            handle_invalid_number_exception(message.message_id, message.number)
             continue
 
         except InvalidAttachmentException as e:

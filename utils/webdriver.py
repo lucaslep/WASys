@@ -3,7 +3,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
 from subprocess import CREATE_NO_WINDOW
-from utils import get_current_disk
+from config.globals import get_app_dir
 from exceptions import DriverInitException
 import os
 
@@ -35,21 +35,20 @@ def start_webdriver(visible: bool = False):
 def get_chrome_options(headless):
     options = Options()
 
-    user_data_dir = r"" + get_current_disk() + r"Google\Chrome\User Data\Default"
+    user_data_dir = r"" + get_app_dir() + r"\user_data"
 
     options.headless = headless
     options.unhandled_prompt_behavior = "accept"
+
     options.add_argument(r"--user-data-dir=" + user_data_dir)
-    options.add_argument(
-        "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36"
-    )
     options.add_argument("--disable-infobars")
     options.add_argument("--disable-extensions")
     options.add_argument("--start-maximized")
     options.add_argument("--window-size=1920,1080")
-    # options.add_argument("--disable-application-chache=0")
-    # options.add_argument("--disable-gpu")
+    options.add_argument("--disable-gpu")
     options.add_argument("--log-level=3")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--no-sandbox")
 
     return options
 
@@ -60,6 +59,7 @@ def install_webdriver():
     except:
         # Se não conseguir instalar o chromeDriver correspondente ao chrome
         # instala uma versão fallback.
+        print("Efetuando download do chrome driver 109.0.5414.74")
         driver_path = ChromeDriverManager(driver_version="109.0.5414.74").install()
 
     return driver_path

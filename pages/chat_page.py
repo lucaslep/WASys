@@ -5,7 +5,7 @@ from selenium.common.exceptions import NoSuchElementException
 import time, urllib, logging
 from pages import BasePage
 from components import Message
-from exceptions import AttachmentTimeoutException
+from exceptions import AttachmentTimeoutException, InvalidNumberException
 
 logger = logging.getLogger("main")
 
@@ -17,11 +17,12 @@ class ChatPage(BasePage):
         text = urllib.parse.quote(f"{message}")
         whatsapp_url = f"https://web.whatsapp.com/send?phone={number}&text={text}"
         self.driver.get(whatsapp_url)
+
         self.wait_load()
 
     invalid_number_by = (
         By.XPATH,
-        '//*[@id="app"]/div/span[2]/div/span/div/div/div/div/div/div[1]',
+        f"//*[text()='O número de telefone compartilhado por url é inválido.']",
     )
 
     send_btn_by = (
@@ -44,8 +45,13 @@ class ChatPage(BasePage):
                 By.XPATH,
                 '//*[@id="app"]/div/span[2]/div/span/div/div/div/div/div/div[1]',
             )
+
             if not element:
                 chat_loaded = True
+
+            if not self.is_number_valid():
+                raise InvalidNumberException("Número de telefone inválido")
+
             time.sleep(1)
         time.sleep(1)
 
@@ -79,7 +85,8 @@ class ChatPage(BasePage):
     def is_number_valid(self):
         try:
             element = self.driver.find_element(*self.invalid_number_by)
-            if element.text == "O número de telefone compartilhado por url é inválido.":
+            # if element.text == "O número de telefone compartilhado por url é inválido.":
+            if element:
                 return False
             else:
                 return True
