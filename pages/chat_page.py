@@ -27,7 +27,8 @@ class ChatPage(BasePage):
 
     send_btn_by = (
         By.XPATH,
-        '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[2]/button',
+        # '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[2]/button',
+        '//*[@id="main"]/footer/div[1]/div/span/div/div[2]/div[2]/button',
     )
 
     send_file_btn_by = (
@@ -95,7 +96,7 @@ class ChatPage(BasePage):
             return True
 
     def send_message(self):
-        wait = WebDriverWait(self.driver, 50)
+        wait = WebDriverWait(self.driver, 10)
         wait.until(EC.element_to_be_clickable(self.send_btn_by)).click()
 
     def send_attachment(self, attachment):
@@ -104,7 +105,8 @@ class ChatPage(BasePage):
             EC.element_to_be_clickable(
                 (
                     By.XPATH,
-                    '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[1]/div/div',
+                    # '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[1]/div/div',
+                    '//*[@id="main"]/footer/div[1]/div/span/div/div[1]/div[2]',
                 )
             )
         )

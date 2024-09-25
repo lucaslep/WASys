@@ -74,22 +74,9 @@ def send_whatsapp_messages(driver, messages: List[WhatsappMessage]):
         try:
             chat_page = ChatPage(driver, message.number, message.message)
 
-            if message.has_attachment():
-                attachments = AttachmentRepository.get_attachments_by_id(
-                    message.attachment_id
-                )
-                for attachment in attachments:
-                    if not os.path.isfile(rf"{attachment.file_path}"):
-                        raise InvalidAttachmentException(
-                            message.message_id,
-                            attachment.attachment_id,
-                            attachment.sequence,
-                            attachment.file_name,
-                        )
-
             chat_page.send_message()
             if message.has_attachment():
-                chat_page.send_all_attachments(attachments)
+                chat_page.send_all_attachments(message.attachments)
 
             logger.info(f"Mensagem para o número {message.number} enviada com sucesso!")
             time.sleep(3)
@@ -100,9 +87,7 @@ def send_whatsapp_messages(driver, messages: List[WhatsappMessage]):
             continue
 
         except InvalidAttachmentException as e:
-            handle_invalid_attachment(
-                e.message_id, e.attachment_id, e.attachment_sequence, e.file_name
-            )
+
             continue
 
         except Exception as e:

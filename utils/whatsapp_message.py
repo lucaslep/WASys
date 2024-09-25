@@ -1,6 +1,9 @@
+from repositories.attachments_repository import Attachment
+
+
 class WhatsappMessage:
     def __init__(self, message_id, number, message, attachment_id):
-        self.files = []
+        self.attachments: list[Attachment] = []
         self.message_id = message_id
         self.number = number
         self.message = message

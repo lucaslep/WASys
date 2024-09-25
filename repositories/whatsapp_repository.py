@@ -5,7 +5,7 @@ from utils import WhatsappMessage
 
 class WhatsappRepository:
     @staticmethod
-    def get_unsent_messages():
+    def get_unsent_messages() -> list[WhatsappMessage]:
         unsent_messages = []
         try:
             sql_handler = SQLHandler(get_db_connection())
