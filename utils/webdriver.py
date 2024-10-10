@@ -32,13 +32,18 @@ def start_webdriver(visible: bool = False):
     return driver
 
 
-def get_chrome_options(headless):
+def get_chrome_options(headless: bool):
     options = Options()
 
     user_data_dir = r"" + get_app_dir() + r"\user_data"
 
     options.headless = headless
     options.unhandled_prompt_behavior = "accept"
+
+    if headless:
+        # Se estiver em segundo plano, escondo a janela pois a nova
+        # versão do chrome está exibindo uma janela em branco.
+        options.add_argument("--window-position=-2400,-2400")
 
     options.add_argument(r"--user-data-dir=" + user_data_dir)
     options.add_argument("--disable-infobars")

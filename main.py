@@ -2,6 +2,7 @@
 from pages import WhatsappPage
 from repositories.attachments_repository import AttachmentRepository
 from repositories.whatsapp_repository import WhatsappRepository
+from repositories.config_repository import ConfigRepository
 from utils import (
     send_whatsapp_messages,
     IntelectualSysDB,
@@ -42,6 +43,11 @@ if __name__ == "__main__":
             pass
 
         browser_visible = ini.get_value("WASYS_NAVEGADOR_VISIVEL")
+
+        # Encerra o processo do chrome caso esteja aberto
+        if ConfigRepository.get_config_by_field("WEB", 2) != "S":
+            Helpers.kill_process("chrome")
+
         driver = start_webdriver(visible=browser_visible)
 
         whatsapp_page = WhatsappPage(driver)
@@ -93,7 +99,7 @@ if __name__ == "__main__":
                             attachment.sequence,
                             attachment.file_name,
                         )
-                    
+
                 if not is_attachment_valid:
                     unsent_messages.pop(i)
 

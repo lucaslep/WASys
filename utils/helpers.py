@@ -57,3 +57,8 @@ class Helpers:
             return True
         except requests.ConnectionError:
             return False
+
+    @staticmethod
+    def kill_process(process_name):
+        command = "Get-Process *" + process_name + "* | ForEach-Object { $_.Kill() }"
+        os.system(f'powershell -Command "{command}"')
