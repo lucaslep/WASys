@@ -19,7 +19,11 @@ class WhatsappPage(BasePage):
         if not "web.whatsapp.com" in self.driver.current_url:
             self.driver.get("https://web.whatsapp.com/")
 
-    qrcode_by = (By.XPATH, '//*[@id="app"]/div/div[2]/div[3]/div[1]/div/div/div[2]/div')
+    qrcode_by = (By.CLASS_NAME, "_akau")
+    login_page_ele_by = (
+        By.ID,
+        "link-device-phone-number-code-screen-instructions",
+    )
 
     def login(self):
         logger.info("WhatsApp não logado, iniciando rotina de Login ... ")
@@ -44,9 +48,7 @@ class WhatsappPage(BasePage):
                 return True
 
             # Se encontrar esse elemento significa que está na tela de login
-            login_page_element = self.driver.find_elements(
-                By.CSS_SELECTOR, "div.landing-main"
-            )
+            login_page_element = self.driver.find_elements(*self.login_page_ele_by)
             if login_page_element:
                 reference_located = True
                 return False
