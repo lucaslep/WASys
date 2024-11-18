@@ -127,7 +127,7 @@ class ChatPage(BasePage):
         time.sleep(1)
 
         last_message_index = len(self.get_messages_out()) - 1
-        self.wait_upload_attachment(last_message_index, 15)
+        self.wait_upload_attachment(last_message_index, 30)
 
     def send_all_attachments(self, attachments):
         for attachment in attachments:

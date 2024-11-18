@@ -79,7 +79,6 @@ def send_whatsapp_messages(driver, messages: List[WhatsappMessage]):
                 chat_page.send_all_attachments(message.attachments)
 
             logger.info(f"Mensagem para o número {message.number} enviada com sucesso!")
-            time.sleep(3)
             mark_message_as_sent(message.message_id)
 
         except InvalidNumberException as e:
@@ -87,13 +86,15 @@ def send_whatsapp_messages(driver, messages: List[WhatsappMessage]):
             continue
 
         except InvalidAttachmentException as e:
-
             continue
 
         except Exception as e:
             logger.error(str(e))
             handle_unknown_exception(message.message_id, message.number)
             continue
+
+        finally:
+            time.sleep(3)
 
 
 def update_whatsapp_waiting_qrcode(value="N"):

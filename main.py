@@ -1,4 +1,5 @@
 # LOCAL SOURCE
+from exceptions.driver_init_exception import DriverInitException
 from pages import WhatsappPage
 from repositories.attachments_repository import AttachmentRepository
 from repositories.whatsapp_repository import WhatsappRepository
@@ -44,11 +45,15 @@ if __name__ == "__main__":
 
         browser_visible = ini.get_value("WASYS_NAVEGADOR_VISIVEL")
 
-        # Encerra o processo do chrome caso esteja aberto
-        if ConfigRepository.get_config_by_field("WEB", 2) != "S":
-            Helpers.kill_process("chrome")
+        try:
+            driver = start_webdriver(visible=browser_visible)
+        except DriverInitException as e:
+            # Encerra o processo do chrome caso esteja aberto
+            if ConfigRepository.get_config_by_field("WEB", 2) != "S":
+                Helpers.kill_process("chrome")
 
-        driver = start_webdriver(visible=browser_visible)
+            # Tenta startar o navegador novamente
+            driver = start_webdriver(visible=browser_visible)
 
         whatsapp_page = WhatsappPage(driver)
         if not whatsapp_page.is_logged():
