@@ -26,6 +26,7 @@ if __name__ == "__main__":
     logger.info(
         "Bem vindo! " + "Iniciando WaSys ... " + "Powered By Sóftica Informática ©"
     )
+    database = None
     driver = None
     try:
         ini_path = rf"{get_app_dir()}/IntelectualSys.ini"
@@ -44,6 +45,7 @@ if __name__ == "__main__":
             pass
 
         browser_visible = ini.get_value("WASYS_NAVEGADOR_VISIVEL")
+        delay_in_seconds = ini.get_value("WASYS_INTERVALO_ENVIO")
 
         try:
             driver = start_webdriver(visible=browser_visible)
@@ -109,7 +111,7 @@ if __name__ == "__main__":
                     unsent_messages.pop(i)
 
             if len(unsent_messages) > 0:
-                send_whatsapp_messages(driver, unsent_messages)
+                send_whatsapp_messages(driver, unsent_messages, delay_in_seconds)
 
             time.sleep(Helpers.minutes_to_seconds(1))
 
@@ -120,6 +122,8 @@ if __name__ == "__main__":
         if driver is not None:
             driver.quit()
 
-        database.disconnect()
+        if database is not None:
+            database.disconnect()
+
         input("\nPressione qualquer tecla para encerrar ...")
         sys.exit("Encerrando módulo WhatsApp, até mais!")

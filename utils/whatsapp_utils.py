@@ -16,6 +16,7 @@ from pages.chat_page import ChatPage
 from repositories.whatsapp_repository import WhatsappRepository
 from exceptions import InvalidAttachmentException, InvalidNumberException
 
+
 logger = logging.getLogger("main")
 
 
@@ -69,7 +70,7 @@ def mark_message_as_sent(messageId):
         logger.error(str(e))
 
 
-def send_whatsapp_messages(driver, messages: List[WhatsappMessage]):
+def send_whatsapp_messages(driver, messages: List[WhatsappMessage], delay: int = 5):
     for message in messages:
         try:
             chat_page = ChatPage(driver, message.number, message.message)
@@ -94,7 +95,7 @@ def send_whatsapp_messages(driver, messages: List[WhatsappMessage]):
             continue
 
         finally:
-            time.sleep(3)
+            time.sleep(delay)
 
 
 def update_whatsapp_waiting_qrcode(value="N"):
