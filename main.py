@@ -111,7 +111,7 @@ if __name__ == "__main__":
                     unsent_messages.pop(i)
 
             if len(unsent_messages) > 0:
-                send_whatsapp_messages(driver, unsent_messages, delay_in_seconds)
+                send_whatsapp_messages(driver, unsent_messages, int(delay_in_seconds))
 
             time.sleep(Helpers.minutes_to_seconds(1))
 
