@@ -16,13 +16,6 @@ import time, os, logging, sys
 from utils.ini_file import IniFile
 from utils.whatsapp_utils import handle_invalid_attachment
 
-def ensure_ini_value(ini, key, default_value):
-    """Ensure a key exists in the INI file and set a default value if it does not."""
-    if ini.get_value(key) is None:
-        ini.set_value(key, str(default_value))
-        ini.save()  # Certifique-se de que a função save() está implementada na sua classe IniFile
-        logger.info(f"Chave '{key}' não encontrada no INI. Definindo valor padrão: {default_value}")
-
 if __name__ == "__main__":
     set_app_path(__file__)
     setup_logger()
@@ -38,9 +31,6 @@ if __name__ == "__main__":
         ini_path = rf"{get_app_dir()}/IntelectualSys.ini"
         ini = IniFile(ini_path)
 
-        # Assegure que o valor de delay_in_seconds existe no arquivo INI
-        ensure_ini_value(ini, "WASYS_INTERVALO_ENVIO", 5)  # Exemplo de valor padrão 5 segundos
-
         logger.info("Conectando ao Banco de dados...")
         db_path = Helpers.decrypt(ini.get_value("DBCnxSystem"))
         database = IntelectualSysDB(db_path)
@@ -55,6 +45,8 @@ if __name__ == "__main__":
 
         browser_visible = ini.get_value("WASYS_NAVEGADOR_VISIVEL")
         delay_in_seconds = ini.get_value("WASYS_INTERVALO_ENVIO")
+        if delay_in_seconds is not None: 
+            delay_in_seconds = int(delay_in_seconds)
 
         try:
             driver = start_webdriver(visible=browser_visible)
@@ -120,7 +112,7 @@ if __name__ == "__main__":
                     unsent_messages.pop(i)
 
             if len(unsent_messages) > 0:
-                send_whatsapp_messages(driver, unsent_messages, int(delay_in_seconds))
+                send_whatsapp_messages(driver, unsent_messages, delay_in_seconds)
 
             time.sleep(Helpers.minutes_to_seconds(1))
 
