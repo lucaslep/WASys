@@ -12,7 +12,10 @@ from utils import (
     update_whatsapp_waiting_qrcode,
 )
 from config.globals import set_db_connection, set_app_path, get_app_dir
-import time, os, logging, sys
+import time
+import os
+import logging
+import sys
 from utils.ini_file import IniFile
 from utils.whatsapp_utils import handle_invalid_attachment
 
@@ -38,15 +41,27 @@ if __name__ == "__main__":
         set_db_connection(con)
         logger.info("Conexão com o banco efetuada com sucesso!")
 
-        while Helpers.has_internet_connection() == False:
+        while not Helpers.has_internet_connection():
             logger.error("Sem conexão com a internet")
             time.sleep(10)
-            pass
 
         browser_visible = ini.get_value("WASYS_NAVEGADOR_VISIVEL")
         delay_in_seconds = ini.get_value("WASYS_INTERVALO_ENVIO")
-        if delay_in_seconds is not None: 
-            delay_in_seconds = int(delay_in_seconds)
+
+        # Verificação para garantir que delay_in_seconds seja um valor inteiro
+        if delay_in_seconds is not None:
+            try:
+                delay_in_seconds = int(delay_in_seconds)
+            except ValueError:
+                logger.error(
+                    "Valor inválido para intervalo de envio, utilizando valor padrão de 5 segundos."
+                )
+                delay_in_seconds = 5  # valor padrão
+        else:
+            logger.warning(
+                "Intervalo de envio não definido no INI, utilizando valor padrão de 5 segundos."
+            )
+            delay_in_seconds = 5  # valor padrão
 
         try:
             driver = start_webdriver(visible=browser_visible)
@@ -66,7 +81,7 @@ if __name__ == "__main__":
         update_whatsapp_waiting_qrcode("N")
 
         while True:
-            if Helpers.has_internet_connection() == False:
+            if not Helpers.has_internet_connection():
                 logger.error(
                     "A conexão com a internet caiu durante o envio, Aguardando conexão"
                 )
@@ -83,6 +98,9 @@ if __name__ == "__main__":
                 message.attachments = AttachmentRepository.get_attachments_by_id(
                     message.attachment_id
                 )
+                # Verificação para garantir que os attachments não sejam None
+                if message.attachments is None:
+                    message.attachments = []
 
             if messages_count <= 0:
                 logger.info(

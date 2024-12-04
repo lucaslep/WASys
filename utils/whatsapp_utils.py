@@ -73,11 +73,20 @@ def mark_message_as_sent(messageId):
 def send_whatsapp_messages(driver, messages: List[WhatsappMessage], delay: int = 5):
     for message in messages:
         try:
-            chat_page = ChatPage(driver, message.number, message.message)
+            if message.number is None:
+                logger.error(f"Número inválido para a mensagem: {message.message_id}")
+                continue
 
+            chat_page = ChatPage(driver, message.number, message.message)
             chat_page.send_message()
+
             if message.has_attachment():
-                chat_page.send_all_attachments(message.attachments)
+                if message.attachments is None or len(message.attachments) == 0:
+                    logger.warning(
+                        f"Nenhum anexo encontrado para a mensagem: {message.message_id}"
+                    )
+                else:
+                    chat_page.send_all_attachments(message.attachments)
 
             logger.info(f"Mensagem para o número {message.number} enviada com sucesso!")
             mark_message_as_sent(message.message_id)
@@ -87,15 +96,23 @@ def send_whatsapp_messages(driver, messages: List[WhatsappMessage], delay: int =
             continue
 
         except InvalidAttachmentException as e:
+            logger.error(f"Erro ao enviar anexo para a mensagem: {message.message_id}")
             continue
 
         except Exception as e:
-            logger.error(str(e))
+            logger.error(f"Erro desconhecido ao enviar mensagem: {str(e)}")
             handle_unknown_exception(message.message_id, message.number)
             continue
 
         finally:
-            time.sleep(delay)
+            # Garante que o delay seja um valor válido
+            if isinstance(delay, int) and delay > 0:
+                time.sleep(delay)
+            else:
+                logger.error(
+                    "Delay deve ser um valor inteiro positivo. Usando padrão de 5 segundos."
+                )
+                time.sleep(5)
 
 
 def update_whatsapp_waiting_qrcode(value="N"):
