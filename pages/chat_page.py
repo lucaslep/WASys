@@ -107,7 +107,7 @@ class ChatPage(BasePage):
                 (
                     By.XPATH,
                     # '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[1]/div/div',
-                    '//*[@id="main"]/footer/div[1]/div/span/div/div[1]/div[2]',
+                    '//button[@aria-label="Anexar"]//span[@data-icon="plus"]',
                 )
             )
         )
