@@ -24,6 +24,10 @@ def start_webdriver(visible: bool = False):
             service=chrome_service,
             options=get_chrome_options(headless),
         )
+        # 👇 Remove a flag "webdriver" do navegador
+        driver.execute_script(
+            "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
+        )
     except Exception as e:
         raise DriverInitException(str(e))
 
@@ -35,7 +39,7 @@ def start_webdriver(visible: bool = False):
 def get_chrome_options(headless: bool):
     options = Options()
 
-    user_data_dir = r"" + get_app_dir() + r"\user_data"
+    user_data_dir = os.path.join(get_app_dir(), "user_data")
 
     options.headless = headless
     options.unhandled_prompt_behavior = "accept"
@@ -45,7 +49,16 @@ def get_chrome_options(headless: bool):
         # versão do chrome está exibindo uma janela em branco.
         options.add_argument("--window-position=-2400,-2400")
 
-    options.add_argument(r"--user-data-dir=" + user_data_dir)
+    # ✅ Evitar detecção por automação:
+    options.add_argument(rf"--user-data-dir={user_data_dir}")
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option("useAutomationExtension", False)
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_argument(
+        "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
+    )
+
+    # ✅ Outras opções úteis:
     options.add_argument("--disable-infobars")
     options.add_argument("--disable-extensions")
     options.add_argument("--start-maximized")
