@@ -28,7 +28,7 @@ class ChatPage(BasePage):
     send_btn_by = (
         By.XPATH,
         # '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[2]/button',
-        '//*[@id="main"]/footer/div[1]/div/span/div/div[2]/div/div[4]/button/span',
+        '//*[@id="main"]/footer/div[1]/div/span/div/div[2]/div[2]/button/span',
     )
 
     send_file_btn_by = (
