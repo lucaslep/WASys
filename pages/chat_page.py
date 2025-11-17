@@ -99,33 +99,32 @@ class ChatPage(BasePage):
         wait.until(EC.element_to_be_clickable(self.send_btn_by)).click()
 
     def send_attachment(self, attachment):
-        logger.info(f"Enviando anexo: {attachment.file_path}")
+
         # Clica no clips
-        logger.info("Clicando no botão de anexo...")
+
         clip_element = self.wait.until(
             EC.element_to_be_clickable(self.attachment_btn_by)
         )
         clip_element.click()
-        logger.info("Botão de anexo clicado.")
+
 
         # Localiza o Input de arquivos e envia os arquivos
-        logger.info("Procurando o input de arquivo...")
+
         file_input_element = self.wait.until(
             EC.presence_of_element_located(self.file_input_by)
         )
-        logger.info("Input de arquivo encontrado.")
-        logger.info(f"Enviando o caminho do arquivo: {attachment.file_path}")
+
         file_input_element.send_keys(attachment.file_path)
-        logger.info("Caminho do arquivo enviado.")
+
 
         # Clica no botão de envio
-        logger.info("Procurando o botão de enviar anexo...")
+
         send_file_button = self.wait.until(
             EC.element_to_be_clickable(self.send_file_btn_by)
         )
-        logger.info("Botão de enviar anexo encontrado.")
+
         send_file_button.click()
-        logger.info("Botão de enviar anexo clicado.")
+
         time.sleep(1)
 
         last_message_index = len(self.get_messages_out()) - 1
