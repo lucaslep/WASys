@@ -24,6 +24,7 @@ def start_webdriver(visible: bool = False):
             service=chrome_service,
             options=get_chrome_options(headless),
         )
+        driver.set_page_load_timeout(20)
         # 👇 Remove a flag "webdriver" do navegador
         driver.execute_script(
             "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"

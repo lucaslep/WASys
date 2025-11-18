@@ -31,68 +31,30 @@ class ChatPage(BasePage):
 
         self.send_btn_by = (
             By.XPATH,
-            self.ini_config.get_value("SEND_BUTTON"),
+            self.ini_config.get_value("ENVIA_MENSAGEM"),
         )
         self.attachment_btn_by = (
             By.XPATH,
-            self.ini_config.get_value("ATTACHMENT_BUTTON"),
+            self.ini_config.get_value("SELECIONA_ANEXO"),
         )
         self.file_input_by = (
             By.XPATH,
-            self.ini_config.get_value("FILE_INPUT_XPATH"),
+            self.ini_config.get_value("CARREGA_ANEXO"),
         )
         self.send_file_btn_by = (
             By.XPATH,
-            self.ini_config.get_value("SEND_ATTACHMENT_BUTTON_XPATH"),
+            self.ini_config.get_value("ENVIA_ANEXO"),
         )
 
     def wait_load(self):
-        wait = WebDriverWait(self.driver, 30)
-        wait.until(EC.visibility_of_element_located((By.ID, "side")))
-
-        chat_loaded = False
-        while not chat_loaded:
-            element = self.driver.find_elements(
-                By.XPATH,
-                '//*[@id="app"]/div/span[2]/div/span/div/div/div/div/div/div[1]',
-            )
-
-            if not element:
-                chat_loaded = True
-
-
-
-            time.sleep(1)
-        time.sleep(1)
-
-    def wait_upload_attachment(self, message_index, timeout):
-        is_attachment_sent = False
-        seconds_waited = 0
-        while not is_attachment_sent:
-            time.sleep(1)
-            seconds_waited += 1
-            if seconds_waited >= timeout:
-                raise AttachmentTimeoutException("Timeout ao aguardar envio de anexo")
-
-            last_message = self.get_message_out_by_index(message_index)
-            is_attachment_sent = last_message.is_sent()
-
-    def get_messages_out(self):
-        return self.driver.find_elements(By.CSS_SELECTOR, "div.message-out")
-
-    def get_last_message_sent(self):
-        messages = self.get_messages_out()
-        return Message(messages[-1])
-
-    def get_message_out_by_index(self, message_index):
-        messages = self.get_messages_out()
-
-        if message_index > len(messages) - 1:
-            raise Exception("Indice fora do range de mensagens enviadas")
-
-        return Message(messages[message_index])
-
-
+        wait = WebDriverWait(self.driver, 20)
+        try:
+            wait.until(EC.visibility_of_element_located((By.ID, "side")))
+            wait.until(EC.element_to_be_clickable(self.send_btn_by))
+        except Exception as e:
+            logger.error(f"Erro ao aguardar a página de conversa carregar: {e}")
+            # Adicione qualquer outra lógica de tratamento de erro que você queira aqui
+            raise
 
     def send_message(self):
         wait = WebDriverWait(self.driver, 10)
@@ -125,25 +87,22 @@ class ChatPage(BasePage):
 
         send_file_button.click()
 
-        time.sleep(1)
-
-        last_message_index = len(self.get_messages_out()) - 1
-        self.wait_upload_attachment(last_message_index, 30)
+        time.sleep(3)
 
     def send_all_attachments(self, attachments):
+        success = True
         for attachment in attachments:
             try:
-                time.sleep(1)
                 self.send_attachment(attachment)
 
             except AttachmentTimeoutException as e:
-                logger.error(
-                    f"Timeout ao aguardar envio de anexo: {attachment.file_name}:\n\n {e}"
-                )
+                success = False
                 continue
 
             except Exception as e:
                 logger.error(
                     f"Ocorreram problemas ao enviar o arquivo: {attachment.file_name}:\n\n {e}"
                 )
+                success = False
                 continue
+        return success
