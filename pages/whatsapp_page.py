@@ -52,6 +52,12 @@ class WhatsappPage(BasePage):
             if login_page_element:
                 reference_located = True
                 return False
+            
+            # Se encontrar esse elemento significa que está na tela de QRCode
+            qrcode_element = self.driver.find_elements(*self.qrcode_by)
+            if qrcode_element:
+                reference_located = True
+                return False
 
             time.sleep(1)
 
