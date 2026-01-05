@@ -80,23 +80,19 @@ def send_whatsapp_messages(driver, messages: List[WhatsappMessage], delay: int =
             chat_page = ChatPage(driver, message.number, message.message)
             chat_page.send_message()
 
-            if message.has_attachment():
-                if message.attachments is None or len(message.attachments) == 0:
-                    logger.warning(
-                        f"Nenhum anexo encontrado para a mensagem: {message.message_id}"
-                    )
-                else:
-                    attachments_sent_successfully = chat_page.send_all_attachments(message.attachments)
+            # if message.has_attachment():
+            #     if message.attachments is None or len(message.attachments) == 0:
+            #         logger.warning(
+            #             f"Nenhum anexo encontrado para a mensagem: {message.message_id}"
+            #         )
+            #     else:
+            #         attachments_sent_successfully = chat_page.send_all_attachments(message.attachments)
 
-            logger.info(f"Mensagem e anexo para o número {message.number} enviada com sucesso!")
+            logger.info(f"Mensagem para o número {message.number} enviada com sucesso!")
             mark_message_as_sent(message.message_id)
 
         except InvalidNumberException as e:
             handle_invalid_number_exception(message.message_id, message.number)
-            continue
-
-        except InvalidAttachmentException as e:
-            logger.error(f"Erro ao enviar anexo para a mensagem: {message.message_id}")
             continue
 
         except Exception as e:
