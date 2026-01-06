@@ -1,6 +1,5 @@
 from exceptions.driver_init_exception import DriverInitException
 from pages import WhatsappPage
-from repositories.attachments_repository import AttachmentRepository
 from repositories.whatsapp_repository import WhatsappRepository
 from repositories.config_repository import ConfigRepository
 from utils import (
@@ -17,7 +16,6 @@ import os
 import logging
 import sys
 from utils.ini_file import IniFile
-from utils.whatsapp_utils import handle_invalid_attachment
 
 if __name__ == "__main__":
     set_app_path(__file__)
@@ -45,7 +43,8 @@ if __name__ == "__main__":
             logger.error("Sem conexão com a internet")
             time.sleep(10)
 
-        browser_visible = ini.get_value("WASYS_NAVEGADOR_VISIVEL")
+        browser_visible_value = ini.get_value("WASYS_NAVEGADOR_VISIVEL")
+        browser_visible = browser_visible_value == "1"
         delay_in_seconds = ini.get_value("WASYS_INTERVALO_ENVIO")
 
         # Verificação para garantir que delay_in_seconds seja um valor inteiro
@@ -91,17 +90,6 @@ if __name__ == "__main__":
             unsent_messages = WhatsappRepository.get_unsent_messages()
             messages_count = len(unsent_messages)
 
-            for message in unsent_messages:
-                if not message.has_attachment():
-                    continue
-
-                message.attachments = AttachmentRepository.get_attachments_by_id(
-                    message.attachment_id
-                )
-                # Verificação para garantir que os attachments não sejam None
-                if message.attachments is None:
-                    message.attachments = []
-
             if messages_count <= 0:
                 logger.info(
                     "Nenhuma mensagem a ser enviada ... Aguardando novas mensagens"
@@ -112,22 +100,6 @@ if __name__ == "__main__":
             logger.info(
                 f"Foram encontradas {messages_count} mensagens a serem enviadas"
             )
-
-            for i in reversed(range(len(unsent_messages))):
-                message = unsent_messages[i]
-                is_attachment_valid = True
-                for attachment in message.attachments:
-                    if not os.path.isfile(rf"{attachment.file_path}"):
-                        is_attachment_valid = False
-                        handle_invalid_attachment(
-                            message.message_id,
-                            attachment.attachment_id,
-                            attachment.sequence,
-                            attachment.file_name,
-                        )
-
-                if not is_attachment_valid:
-                    unsent_messages.pop(i)
 
             if len(unsent_messages) > 0:
                 send_whatsapp_messages(driver, unsent_messages, delay_in_seconds)

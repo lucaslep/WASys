@@ -5,34 +5,15 @@ from typing import List
 
 from constants import whatsapp_constants as wpp_constants
 from constants.error_messages import (
-    ATTACHMENT_NOT_FOUND_ERROR,
     INVALID_NUMBER_ERROR,
-)
-from repositories.attachments_repository import (
-    AttachmentRepository,
 )
 from utils import Helpers, WhatsappMessage
 from pages.chat_page import ChatPage
 from repositories.whatsapp_repository import WhatsappRepository
-from exceptions import InvalidAttachmentException, InvalidNumberException
+from exceptions import InvalidNumberException
 
 
 logger = logging.getLogger("main")
-
-
-def handle_invalid_attachment(
-    message_id: int, attachment_id: int, attachment_sequence: int, file_name: str
-):
-    logger.error(
-        Helpers.format_error_message(
-            ATTACHMENT_NOT_FOUND_ERROR, [message_id, file_name]
-        )
-    )
-
-    WhatsappRepository.update_message_error(
-        message_id, wpp_constants.ANEXOS_ERROR_CODE, wpp_constants.ANEXOS_ERROR_MESSAGE
-    )
-    AttachmentRepository.update_attachment_error(attachment_id, attachment_sequence)
 
 
 def handle_invalid_number_exception(message_id, number):
@@ -79,14 +60,6 @@ def send_whatsapp_messages(driver, messages: List[WhatsappMessage], delay: int =
 
             chat_page = ChatPage(driver, message.number, message.message)
             chat_page.send_message()
-
-            # if message.has_attachment():
-            #     if message.attachments is None or len(message.attachments) == 0:
-            #         logger.warning(
-            #             f"Nenhum anexo encontrado para a mensagem: {message.message_id}"
-            #         )
-            #     else:
-            #         attachments_sent_successfully = chat_page.send_all_attachments(message.attachments)
 
             logger.info(f"Mensagem para o número {message.number} enviada com sucesso!")
             mark_message_as_sent(message.message_id)

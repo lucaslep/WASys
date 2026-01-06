@@ -11,7 +11,7 @@ class WhatsappRepository:
             sql_handler = SQLHandler(get_db_connection())
             result = sql_handler.fetchall(
                 """
-                SELECT ID, NUMERO, MENSAGEM, ID_ANEXO 
+                SELECT ID, NUMERO, MENSAGEM
                 FROM MENSAGENS_WHATSAPP 
                 WHERE ENVIO IS NULL 
                 AND COD_ERRO IS NULL 
@@ -19,8 +19,8 @@ class WhatsappRepository:
                 """
             )
 
-            for id, numero, mensagem, id_anexo in result:
-                message = WhatsappMessage(id, numero, mensagem, id_anexo)
+            for id, numero, mensagem in result:
+                message = WhatsappMessage(id, numero, mensagem)
                 unsent_messages.append(message)
 
         finally:

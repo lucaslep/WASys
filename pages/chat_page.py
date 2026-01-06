@@ -5,7 +5,7 @@ from selenium.common.exceptions import NoSuchElementException
 import time, urllib, logging, os
 from pages import BasePage
 from components import Message
-from exceptions import AttachmentTimeoutException, InvalidNumberException
+from exceptions import InvalidNumberException
 from utils.ini_file import IniFile
 from config.globals import get_app_dir
 
@@ -33,18 +33,6 @@ class ChatPage(BasePage):
             By.XPATH,
             self.ini_config.get_value("ENVIA_MENSAGEM"),
         )
-        self.attachment_btn_by = (
-            By.XPATH,
-            self.ini_config.get_value("SELECIONA_ANEXO"),
-        )
-        self.file_input_by = (
-            By.XPATH,
-            self.ini_config.get_value("CARREGA_ANEXO"),
-        )
-        self.send_file_btn_by = (
-            By.XPATH,
-            self.ini_config.get_value("ENVIA_ANEXO"),
-        )
 
     def wait_load(self):
         wait = WebDriverWait(self.driver, 20)
@@ -59,50 +47,3 @@ class ChatPage(BasePage):
     def send_message(self):
         wait = WebDriverWait(self.driver, 10)
         wait.until(EC.element_to_be_clickable(self.send_btn_by)).click()
-
-    def send_attachment(self, attachment):
-
-        # Clica no clips
-
-        clip_element = self.wait.until(
-            EC.element_to_be_clickable(self.attachment_btn_by)
-        )
-        clip_element.click()
-
-
-        # Localiza o Input de arquivos e envia os arquivos
-
-        file_input_element = self.wait.until(
-            EC.presence_of_element_located(self.file_input_by)
-        )
-
-        file_input_element.send_keys(attachment.file_path)
-
-
-        # Clica no botão de envio
-
-        send_file_button = self.wait.until(
-            EC.element_to_be_clickable(self.send_file_btn_by)
-        )
-
-        send_file_button.click()
-
-        time.sleep(3)
-
-    def send_all_attachments(self, attachments):
-        success = True
-        for attachment in attachments:
-            try:
-                self.send_attachment(attachment)
-
-            except AttachmentTimeoutException as e:
-                success = False
-                continue
-
-            except Exception as e:
-                logger.error(
-                    f"Ocorreram problemas ao enviar o arquivo: {attachment.file_name}:\n\n {e}"
-                )
-                success = False
-                continue
-        return success

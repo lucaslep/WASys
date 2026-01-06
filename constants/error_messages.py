@@ -6,4 +6,3 @@ DB_DATA_ACESS_ERROR = "Erro ao acessar dados com a mensagems: "
 INVALID_NUMBER_ERROR = (
     "Não foi possivel enviar a mensagem com id: {0} devido ao numero: {1} inválido"
 )
-ATTACHMENT_NOT_FOUND_ERROR = 'Não foi possivel enviar a mensagem com id: {0} devido ao anexo não encontrado: "{1}"'
