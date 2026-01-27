@@ -43,8 +43,7 @@ if __name__ == "__main__":
             logger.error("Sem conexão com a internet")
             time.sleep(10)
 
-        browser_visible_value = ini.get_value("WASYS_NAVEGADOR_VISIVEL")
-        browser_visible = browser_visible_value == "1"
+        browser_visible = ini.get_value("WASYS_NAVEGADOR_VISIVEL")
         delay_in_seconds = ini.get_value("WASYS_INTERVALO_ENVIO")
 
         # Verificação para garantir que delay_in_seconds seja um valor inteiro

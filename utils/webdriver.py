@@ -62,8 +62,11 @@ def get_chrome_options(headless: bool):
     # ✅ Outras opções úteis:
     options.add_argument("--disable-infobars")
     options.add_argument("--disable-extensions")
-    options.add_argument("--start-maximized")
-    options.add_argument("--window-size=1920,1080")
+
+    if not headless:
+        options.add_argument("--start-maximized")
+        options.add_argument("--window-size=1920,1080")
+
     options.add_argument("--disable-gpu")
     options.add_argument("--log-level=3")
     options.add_argument("--disable-dev-shm-usage")
