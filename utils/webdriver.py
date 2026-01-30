@@ -37,36 +37,38 @@ def start_webdriver(visible: bool = False):
     return driver
 
 
-def get_chrome_options(headless: bool):
+def get_chrome_options(visible: bool):
     options = Options()
 
     user_data_dir = os.path.join(get_app_dir(), "user_data")
 
-    options.headless = headless
+    # PERFIL FIXO → mantém sessão do WhatsApp
+    options.add_argument(rf"--user-data-dir={user_data_dir}")
+
     options.unhandled_prompt_behavior = "accept"
 
-    if headless:
-        # Se estiver em segundo plano, escondo a janela pois a nova
-        # versão do chrome está exibindo uma janela em branco.
-        options.add_argument("--window-position=-2400,-2400")
+    # 🚫 NÃO USAR HEADLESS
+    # Mantém WhatsApp logado
 
-    # ✅ Evitar detecção por automação:
-    options.add_argument(rf"--user-data-dir={user_data_dir}")
+    if not visible:
+        # Joga a janela para fora da tela
+        options.add_argument("--window-position=-32000,-32000")
+        options.add_argument("--window-size=1920,1080")
+    else:
+        options.add_argument("--start-maximized")
+
+    # Anti-detecção
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option("useAutomationExtension", False)
     options.add_argument("--disable-blink-features=AutomationControlled")
+
     options.add_argument(
-        "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
+        "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
     )
 
-    # ✅ Outras opções úteis:
     options.add_argument("--disable-infobars")
     options.add_argument("--disable-extensions")
-
-    if not headless:
-        options.add_argument("--start-maximized")
-        options.add_argument("--window-size=1920,1080")
-
     options.add_argument("--disable-gpu")
     options.add_argument("--log-level=3")
     options.add_argument("--disable-dev-shm-usage")
