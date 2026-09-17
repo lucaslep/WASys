@@ -57,7 +57,7 @@ python --version
 
 Clone este repositório:
 
-git clone https://github.com/seu-usuario/WhatsappProject.git
+git clone [https://github.com/seu-usuario/WhatsappProject.git](https://github.com/lucaslep/WASys.git)
 
 Entre na pasta do projeto:
 
