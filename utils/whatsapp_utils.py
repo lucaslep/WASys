@@ -11,6 +11,8 @@ from utils import Helpers, WhatsappMessage
 from pages.chat_page import ChatPage
 from repositories.whatsapp_repository import WhatsappRepository
 from exceptions import InvalidNumberException
+from exceptions.whatsapp_exceptions import MessageSendException
+from config.settings import settings
 
 
 logger = logging.getLogger("main")
@@ -51,7 +53,10 @@ def mark_message_as_sent(messageId):
         logger.error(str(e))
 
 
-def send_whatsapp_messages(driver, messages: List[WhatsappMessage], delay: int = 5):
+def send_whatsapp_messages(driver, messages: List[WhatsappMessage], delay: int = None):
+    if delay is None:
+        delay = settings.send_delay
+
     for message in messages:
         try:
             if message.number is None:
@@ -59,29 +64,24 @@ def send_whatsapp_messages(driver, messages: List[WhatsappMessage], delay: int =
                 continue
 
             chat_page = ChatPage(driver, message.number, message.message)
+            chat_page.open_chat()
             chat_page.send_message()
 
             logger.info(f"Mensagem para o número {message.number} enviada com sucesso!")
             mark_message_as_sent(message.message_id)
 
-        except InvalidNumberException as e:
+        except (InvalidNumberException, MessageSendException) as e:
+            logger.error(f"Falha ao enviar para {message.number}: {e}")
             handle_invalid_number_exception(message.message_id, message.number)
             continue
 
         except Exception as e:
-            logger.error(f"Erro desconhecido ao enviar mensagem: {str(e)}")
+            logger.error(f"Erro inesperado ao enviar mensagem: {str(e)}")
             handle_unknown_exception(message.message_id, message.number)
             continue
 
         finally:
-            # Garante que o delay seja um valor válido
-            if isinstance(delay, int) and delay > 0:
-                time.sleep(delay)
-            else:
-                logger.error(
-                    "Delay deve ser um valor inteiro positivo. Usando padrão de 5 segundos."
-                )
-                time.sleep(5)
+            time.sleep(delay)
 
 
 def update_whatsapp_waiting_qrcode(value="N"):

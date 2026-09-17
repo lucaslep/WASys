@@ -10,43 +10,49 @@ class SQLHandler:
         try:
             self.connection = connection
             self.cur = connection.cursor()
-
         except Exception as e:
             msg = Helpers.format_error_message(DB_CONNECTION_ERROR, [str(e)])
             logger.error(msg)
-            sys.exit(msg)
+            raise ConnectionError(msg)
 
     def close(self):
-        self.cur.close()
+        if self.cur:
+            self.cur.close()
         self.connection = None
 
-    def exec_query(self, sql):
+    def exec_query(self, sql, params=None):
         try:
             self.connection.begin()
-            self.cur.execute(sql)
+            if params:
+                self.cur.execute(sql, params)
+            else:
+                self.cur.execute(sql)
             self.connection.commit()
-
         except Exception as e:
             msg = Helpers.format_error_message(SQL_ERROR, [str(e)])
-            logger.error(msg)
-            sys.exit(msg)
+            logger.error(f"SQL Error: {msg} | Query: {sql} | Params: {params}")
+            raise Exception(msg)
 
-    def fetchall(self, sql):
+    def fetchall(self, sql, params=None):
         try:
-            self.cur.execute(sql)
+            if params:
+                self.cur.execute(sql, params)
+            else:
+                self.cur.execute(sql)
             return self.cur.fetchall()
-
         except Exception as e:
             msg = Helpers.format_error_message(SQL_ERROR, [str(e)])
-            logger.error(msg)
-            sys.exit(msg)
+            logger.error(f"SQL Error: {msg} | Query: {sql} | Params: {params}")
+            raise Exception(msg)
 
-    def fetchone(self, sql):
+    def fetchone(self, sql, params=None):
         try:
-            self.cur.execute(sql)
+            if params:
+                self.cur.execute(sql, params)
+            else:
+                self.cur.execute(sql)
             return self.cur.fetchone()
-
         except Exception as e:
             msg = Helpers.format_error_message(SQL_ERROR, [str(e)])
-            logger.error(msg)
-            sys.exit(msg)
+            logger.error(f"SQL Error: {msg} | Query: {sql} | Params: {params}")
+            raise Exception(msg)

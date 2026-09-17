@@ -1,82 +1,159 @@
 from selenium.webdriver.support.ui import WebDriverWait
-import selenium.webdriver.support.expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
 from pages import BasePage
 from utils import (
     update_whatsapp_waiting_qrcode,
-    update_whatsapp_waiting_qrcode,
     Helpers,
 )
-import time, logging
+import time
+import logging
 
 logger = logging.getLogger("main")
 
 
 class WhatsappPage(BasePage):
+
     def __init__(self, driver):
         super().__init__(driver)
-        if not "web.whatsapp.com" in self.driver.current_url:
-            self.driver.get("https://web.whatsapp.com/")
 
-    qrcode_by = (By.CLASS_NAME, "_akau")
-    login_page_ele_by = (
-        By.ID,
-        "link-device-phone-number-code-screen-instructions",
-    )
+        if "web.whatsapp.com" not in self.driver.current_url:
+            self.driver.get("https://web.whatsapp.com/")
+            time.sleep(20)
 
     def login(self):
-        logger.info("WhatsApp não logado, iniciando rotina de Login ... ")
+        for _ in range(3):
+            if self.is_logged():
+                logger.info("WhatsApp já estava logado ou terminou de carregar.")
+                return
+            time.sleep(5)
+
+        logger.info(
+            "WhatsApp não logado, iniciando rotina de Login ..."
+        )
+
         update_whatsapp_waiting_qrcode("S")
 
-        while not self.is_logged():
-            qrcode = self.get_qrcode()
-            Helpers.clear_terminal()
-            logger.info("Aguardando captura do QRCode para login ...")
-            qrcode.print_ascii()
-            time.sleep(30)
+        qr_printed = False
+
+        while True:
+
+            # Já logado completamente
+            if self.is_logged():
+                break
+
+            try:
+
+                qrcode = self.get_qrcode()
+
+                if qrcode and not qr_printed:
+
+                    Helpers.clear_terminal()
+
+                    logger.info(
+                        "Aguardando captura do QRCode para login ..."
+                    )
+
+                    qrcode.print_ascii()
+                    print("\n") 
+                    logger.info( "Após a leitura do QRCode, aguarde! " "O WhatsApp Web estará sendo carregado..." )
+
+                    qr_printed = True
+
+            except Exception:
+                logger.info("QRCode lido com sucesso. " "Finalizando autenticação...")
+                break
+
+            time.sleep(1)
+
+        # Espera sidebar carregar
+        WebDriverWait(self.driver, 60).until(
+            lambda d: d.find_elements(By.ID, "side")
+        )
+
+        logger.info("Login realizado com sucesso!")
 
         update_whatsapp_waiting_qrcode("N")
 
     def is_logged(self):
-        reference_located = False
-        while not reference_located:
-            # Se encontrar esse elemento significa que o whatsapp está logado
-            chat_page_element = self.driver.find_elements(By.ID, "side")
-            if chat_page_element:
-                reference_located = True
+
+        try:
+
+            # Sidebar principal carregada
+            if self.driver.find_elements(By.ID, "side"):
                 return True
 
-            # Se encontrar esse elemento significa que está na tela de login
-            login_page_element = self.driver.find_elements(*self.login_page_ele_by)
-            if login_page_element:
-                reference_located = True
-                return False
-            
-            # Se encontrar esse elemento significa que está na tela de QRCode
-            qrcode_element = self.driver.find_elements(*self.qrcode_by)
-            if qrcode_element:
-                reference_located = True
-                return False
+            # Campo de busca carregado
+            if self.driver.find_elements(
+                By.CSS_SELECTOR,
+                "div[contenteditable='true']"
+            ):
+                return True
 
-            time.sleep(1)
+            # Conversas renderizadas
+            if self.driver.find_elements(
+                By.CSS_SELECTOR,
+                "[data-testid='chat-list']"
+            ):
+                return True
+
+            return False
+
+        except:
+            return False
+
 
     def get_qrcode(self):
-        try:
-            WebDriverWait(self.driver, 60).until(self.__qrcode_loaded)
-        except TimeoutException as e:
-            raise TimeoutException("Timeout ao aguardar carregamento do QRCode")
 
-        qrcode_element = self.driver.find_element(
-            *self.qrcode_by,
-        )
-        if qrcode_element:
-            qr_string = qrcode_element.get_attribute("data-ref")
-            return Helpers.gen_qrcode_from_string(qr_string)
+        try:
+
+            WebDriverWait(self.driver, 60).until(
+                self.__qrcode_loaded
+            )
+
+            # Busca qualquer elemento que tenha data-ref
+            qrcode_elements = self.driver.find_elements(
+                By.CSS_SELECTOR,
+                "[data-ref]"
+            )
+
+            for element in qrcode_elements:
+
+                qr_string = element.get_attribute("data-ref")
+
+                if qr_string:
+                    return Helpers.gen_qrcode_from_string(
+                        qr_string
+                    )
+
+            raise Exception(
+                "QR Code encontrado mas data-ref vazio."
+            )
+
+        except TimeoutException:
+            raise TimeoutException(
+                "Timeout ao aguardar QRCode."
+            )
 
     def __qrcode_loaded(self, driver):
+
         try:
-            qrcode = driver.find_element(*self.qrcode_by)
-            return qrcode.get_attribute("data-ref") is not None
+
+            elements = driver.find_elements(
+                By.CSS_SELECTOR,
+                "[data-ref]"
+            )
+
+            for element in elements:
+
+                qr_string = element.get_attribute(
+                    "data-ref"
+                )
+
+                if qr_string:
+                    return True
+
+            return False
+
         except:
             return False

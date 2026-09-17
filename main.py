@@ -11,109 +11,72 @@ from utils import (
     update_whatsapp_waiting_qrcode,
 )
 from config.globals import set_db_connection, set_app_path, get_app_dir
+from config.settings import settings
 import time
 import os
 import logging
 import sys
-from utils.ini_file import IniFile
 
 if __name__ == "__main__":
     set_app_path(__file__)
     setup_logger()
-    os.environ["WDM_LOG"] = str(logging.NOTSET)  # Desativa o log do webdriver manager
+    os.environ["WDM_LOG"] = str(logging.NOTSET)
 
     logger = logging.getLogger("main")
-    logger.info(
-        "Bem vindo! " + "Iniciando WaSys ... " + "Powered By Sóftica Informática ©"
-    )
+    logger.info("WaSys Iniciado | Powered By Sóftica Informática ©")
+    
     database = None
     driver = None
+    
     try:
-        ini_path = rf"{get_app_dir()}/IntelectualSys.ini"
-        ini = IniFile(ini_path)
-
         logger.info("Conectando ao Banco de dados...")
-        db_path = Helpers.decrypt(ini.get_value("DBCnxSystem"))
-        database = IntelectualSysDB(db_path)
-        con = database.connect()
-        set_db_connection(con)
-        logger.info("Conexão com o banco efetuada com sucesso!")
+        database = IntelectualSysDB(settings.db_path)
+        set_db_connection(database.connect())
+        logger.info("Banco de dados conectado!")
 
         while not Helpers.has_internet_connection():
-            logger.error("Sem conexão com a internet")
+            logger.error("Aguardando conexão com a internet...")
             time.sleep(10)
 
-        browser_visible = ini.get_value("WASYS_NAVEGADOR_VISIVEL")
-        delay_in_seconds = ini.get_value("WASYS_INTERVALO_ENVIO")
-
-        # Verificação para garantir que delay_in_seconds seja um valor inteiro
-        if delay_in_seconds is not None:
-            try:
-                delay_in_seconds = int(delay_in_seconds)
-            except ValueError:
-                logger.error(
-                    "Valor inválido para intervalo de envio, utilizando valor padrão de 5 segundos."
-                )
-                delay_in_seconds = 5  # valor padrão
-        else:
-            logger.warning(
-                "Intervalo de envio não definido no INI, utilizando valor padrão de 5 segundos."
-            )
-            delay_in_seconds = 5  # valor padrão
-
         try:
-            driver = start_webdriver(visible=browser_visible)
+            driver = start_webdriver()
         except DriverInitException as e:
-            # Encerra o processo do chrome caso esteja aberto
-            if ConfigRepository.get_config_by_field("WEB", 2) != "S":
-                Helpers.kill_process("chrome")
-
-            # Tenta startar o navegador novamente
-            driver = start_webdriver(visible=browser_visible)
+            logger.error(f"Falha crítica ao iniciar navegador: {e}")
+            sys.exit(1)
 
         whatsapp_page = WhatsappPage(driver)
         if not whatsapp_page.is_logged():
             whatsapp_page.login()
 
-        logger.info("Conectado ao whatsapp com sucesso!")
+        logger.info("WhatsApp conectado com sucesso!")
         update_whatsapp_waiting_qrcode("N")
 
         while True:
             if not Helpers.has_internet_connection():
-                logger.error(
-                    "A conexão com a internet caiu durante o envio, Aguardando conexão"
-                )
+                logger.error("Conexão perdida. Aguardando...")
                 time.sleep(10)
                 continue
 
             unsent_messages = WhatsappRepository.get_unsent_messages()
-            messages_count = len(unsent_messages)
-
-            if messages_count <= 0:
-                logger.info(
-                    "Nenhuma mensagem a ser enviada ... Aguardando novas mensagens"
-                )
+            
+            if not unsent_messages:
+                logger.info("Nenhuma mensagem pendente. Aguardando 1 minuto...")
                 time.sleep(Helpers.minutes_to_seconds(1))
                 continue
 
-            logger.info(
-                f"Foram encontradas {messages_count} mensagens a serem enviadas"
-            )
-
-            if len(unsent_messages) > 0:
-                send_whatsapp_messages(driver, unsent_messages, delay_in_seconds)
-
+            logger.info(f"Enviando {len(unsent_messages)} mensagens...")
+            send_whatsapp_messages(driver, unsent_messages)
+            
             time.sleep(Helpers.minutes_to_seconds(1))
 
     except Exception as e:
-        logger.error(str(e))
+        logger.error(f"Erro Fatal: {e}")
 
     finally:
-        if driver is not None:
+        if driver:
             driver.quit()
-
-        if database is not None:
+        if database:
             database.disconnect()
-
-        input("\nPressione qualquer tecla para encerrar ...")
-        sys.exit("Encerrando módulo WhatsApp, até mais!")
+        
+        input("\nPressione qualquer tecla para encerrar...")
+        sys.exit(0)

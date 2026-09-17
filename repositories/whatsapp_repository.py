@@ -22,46 +22,46 @@ class WhatsappRepository:
             for id, numero, mensagem in result:
                 message = WhatsappMessage(id, numero, mensagem)
                 unsent_messages.append(message)
-
         finally:
             sql_handler.close()
 
         return unsent_messages
 
     @staticmethod
-    def update_message_error(message_id, error_code, error_message):
+    def update_message_error(message_id: int, error_code: int, error_message: str):
         try:
             sql_handler = SQLHandler(get_db_connection())
             sql_handler.exec_query(
                 """
                 UPDATE MENSAGENS_WHATSAPP SET
-                    COD_ERRO = %i,
-                    ERRO = '%s'
+                    COD_ERRO = ?,
+                    ERRO = ?
                 WHERE 
-                    ID = %i 
-                """
-                % (error_code, error_message, message_id)
+                    ID = ? 
+                """,
+                (error_code, error_message, message_id)
             )
         finally:
             sql_handler.close()
 
     @staticmethod
-    def update_message_send(message_id, send_time):
+    def update_message_send(message_id: int, send_time: str):
         try:
             sql_handler = SQLHandler(get_db_connection())
             sql_handler.exec_query(
-                "UPDATE MENSAGENS_WHATSAPP SET ENVIO = '%s', COD_ERRO = NULL, ERRO = NULL WHERE ID = %i"
-                % (send_time, message_id)
+                "UPDATE MENSAGENS_WHATSAPP SET ENVIO = ?, COD_ERRO = NULL, ERRO = NULL WHERE ID = ?",
+                (send_time, message_id)
             )
         finally:
             sql_handler.close()
 
     @staticmethod
-    def update_waiting_qrcode(value):
+    def update_waiting_qrcode(value: str):
         try:
             sql_handler = SQLHandler(get_db_connection())
             sql_handler.exec_query(
-                "UPDATE CONFIGURACOES2 SET WHATSAPP_AGUARDANDO_QRCODE = '%s' " % (value)
+                "UPDATE CONFIGURACOES2 SET WHATSAPP_AGUARDANDO_QRCODE = ?",
+                (value,)
             )
         finally:
             sql_handler.close()
